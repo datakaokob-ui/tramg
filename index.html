@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ช่องทางร้องเรียนการทุจริต | สภ.เขาวิเศษ</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Noto Sans Thai","Tahoma",sans-serif;
+      background:linear-gradient(135deg,#eef5ff,#f8fbff);
+      color:#172033; min-height:100vh;
+    }
+    .wrap{max-width:820px;margin:0 auto;padding:28px 16px 45px}
+    .card{
+      background:#fff;border-radius:20px;box-shadow:0 12px 35px rgba(26,70,120,.12);
+      overflow:hidden;border:1px solid #e4ecf7;
+    }
+    .head{
+      padding:28px 24px;text-align:center;color:#fff;
+      background:linear-gradient(135deg,#0b5ed7,#174ea6);
+    }
+    .head .icon{font-size:42px;margin-bottom:6px}
+    h1{font-size:25px;margin:0 0 12px}
+    .intro{font-size:16px;line-height:1.8;margin:0 auto;max-width:680px}
+    form{padding:26px 24px}
+    label{display:block;font-weight:700;margin:0 0 8px}
+    .req{color:#d32f2f}
+    input,textarea{
+      width:100%;border:1px solid #cbd7e6;border-radius:10px;padding:13px 14px;
+      font-size:16px;font-family:inherit;outline:none;background:#fff;
+      transition:.2s;
+    }
+    input:focus,textarea:focus{border-color:#1976d2;box-shadow:0 0 0 3px rgba(25,118,210,.1)}
+    textarea{min-height:170px;resize:vertical}
+    .field{margin-bottom:19px}
+    .hint{font-size:13px;color:#667085;margin-top:6px}
+    .filebox{border:1px dashed #8aa9cf;padding:16px;border-radius:10px;background:#f7fbff}
+    .preview{display:none;margin-top:12px;max-width:180px;max-height:180px;border-radius:10px;border:1px solid #d7e2ef}
+    button{
+      width:100%;border:0;border-radius:11px;padding:14px 18px;font-size:17px;
+      font-weight:700;color:#fff;background:#0b5ed7;cursor:pointer;
+    }
+    button:hover{background:#084caf}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .privacy{
+      margin:4px 24px 26px;padding:18px;text-align:center;border-radius:12px;
+      background:#f4f8fd;color:#44546a;line-height:1.8;font-size:14px;
+    }
+    .station{font-weight:800;color:#174ea6;margin-top:4px}
+    .modal{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);
+      align-items:center;justify-content:center;padding:18px;z-index:20;
+    }
+    .modal.show{display:flex}
+    .modalbox{
+      background:#fff;border-radius:18px;max-width:420px;width:100%;padding:28px;text-align:center;
+      box-shadow:0 18px 60px rgba(0,0,0,.25)
+    }
+    .ok{font-size:52px;color:#20a464}
+    .modalbox h2{margin:8px 0;font-size:22px}
+    .close{margin-top:18px;background:#0b5ed7}
+    .error{color:#c62828;font-size:14px;margin-top:10px;display:none}
+    @media(max-width:600px){
+      .wrap{padding:12px 10px 28px}.head{padding:22px 16px}h1{font-size:21px}
+      form{padding:22px 16px}.privacy{margin:4px 16px 20px}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <header class="head">
+      <div class="icon">🛡️</div>
+      <h1>ช่องทางร้องเรียนการทุจริต</h1>
+      <p class="intro">หากพบเห็นข้าราชการและเจ้าหน้าที่ของรัฐทุจริตประพฤติมิชอบ<br>แจ้งเบาะแสร้องเรียนได้ที่นี่</p>
+    </header>
+
+    <form id="complaintForm">
+      <div class="field">
+        <label for="complaint_date">วันที่ <span class="req">*</span></label>
+        <input id="complaint_date" type="date" required>
+      </div>
+
+      <div class="field">
+        <label for="full_name">ชื่อ/สกุล <span class="req">*</span></label>
+        <input id="full_name" type="text" maxlength="150" placeholder="กรอกชื่อและนามสกุล" required>
+      </div>
+
+      <div class="field">
+        <label for="phone">เบอร์โทรติดต่อ <span class="req">*</span></label>
+        <input id="phone" type="tel" maxlength="20" inputmode="tel" placeholder="เช่น 0812345678" required>
+      </div>
+
+      <div class="field">
+        <label for="details">รายละเอียดเรื่องที่ร้องเรียนการทุจริต <span class="req">*</span></label>
+        <textarea id="details" maxlength="5000" placeholder="โปรดระบุรายละเอียด เช่น วัน เวลา สถานที่ บุคคลที่เกี่ยวข้อง และข้อเท็จจริงที่พบเห็น" required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="evidence">อัพโหลดภาพประกอบ <span class="req">*</span></label>
+        <div class="filebox">
+          <input id="evidence" type="file" accept="image/*" required>
+          <div class="hint">รองรับภาพ JPG, JPEG, PNG, WEBP ขนาดไม่เกิน 5 MB</div>
+          <img id="preview" class="preview" alt="ตัวอย่างภาพ">
+        </div>
+        <div id="error" class="error"></div>
+      </div>
+
+      <button id="submitBtn" type="submit">บันทึกข้อมูล</button>
+    </form>
+
+    <div class="privacy">
+      PDPA คือ พระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล ซึ่งเป็นกฎหมายที่ถูกสร้างมาเพื่อป้องกันการละเมิดข้อมูลส่วนบุคคลของทุกคน รวมถึงการจัดเก็บข้อมูลและนำไปใช้โดยไม่ได้แจ้งให้ทราบ และไม่ได้รับความยินยอมจากเจ้าของข้อมูลเสียก่อน
+      <div class="station">สถานีตำรวจภูธรเขาวิเศษ (สภ.เขาวิเศษ) ตั้งอยู่เลขที่ 218 หมู่ที่ 4 ตำบลเขาวิเศษ อำเภอวังวิเศษ จังหวัดตรัง 92220 เบอร์โทรศัพท์ติดต่อคือ 0-7582-9762</div>
+    </div>
+  </div>
+</div>
+
+<div id="successModal" class="modal" role="dialog" aria-modal="true">
+  <div class="modalbox">
+    <div class="ok">✓</div>
+    <h2>บันทึกข้อมูลเรียบร้อยแล้วค่ะ</h2>
+    <p>ขอบคุณสำหรับการแจ้งเบาะแสและข้อมูลที่เป็นประโยชน์</p>
+    <button class="close" id="closeModal">ปิด</button>
+  </div>
+</div>
+
+<script>
+  // ============================
+  // ใส่ค่า Supabase ของคุณตรงนี้
+  // ============================
+  const SUPABASE_URL = "https://moeiyycmksdinbdfcitg.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vZWl5eWNta3NkaW5iZGZjaXRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1OTcyNTYsImV4cCI6MjEwMjE3MzI1Nn0.f9n3O0xsh_MHacXWXfRJAwK-QK60-19R_xSB97VRqpQ";
+
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const form = document.getElementById("complaintForm");
+  const fileInput = document.getElementById("evidence");
+  const preview = document.getElementById("preview");
+  const errorBox = document.getElementById("error");
+  const submitBtn = document.getElementById("submitBtn");
+  const modal = document.getElementById("successModal");
+
+  document.getElementById("complaint_date").value =
+    new Date().toLocaleDateString("en-CA", {timeZone:"Asia/Bangkok"});
+
+  fileInput.addEventListener("change", () => {
+    errorBox.style.display = "none";
+    const file = fileInput.files[0];
+    if (!file) { preview.style.display="none"; return; }
+    if (!file.type.startsWith("image/")) {
+      fileInput.value=""; preview.style.display="none";
+      showError("กรุณาเลือกไฟล์ภาพเท่านั้น");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      fileInput.value=""; preview.style.display="none";
+      showError("ไฟล์ภาพต้องมีขนาดไม่เกิน 5 MB");
+      return;
+    }
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+  });
+
+  function showError(message) {
+    errorBox.textContent = message;
+    errorBox.style.display = "block";
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.style.display = "none";
+
+    const date = document.getElementById("complaint_date").value.trim();
+    const name = document.getElementById("full_name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const details = document.getElementById("details").value.trim();
+    const file = fileInput.files[0];
+
+    if (!date || !name || !phone || !details || !file) {
+      showError("กรุณากรอกข้อมูลให้ครบทุกช่อง และอัพโหลดภาพประกอบ");
+      return;
+    }
+
+    if (SUPABASE_URL.includes("ใส่_") || SUPABASE_ANON_KEY.includes("ใส่_")) {
+      showError("ยังไม่ได้ตั้งค่า Supabase URL และ Anon Key ในไฟล์ index.html");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "กำลังบันทึกข้อมูล...";
+
+    try {
+      const ext = file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,"");
+      const id = crypto.randomUUID();
+      const path = `${id}.${ext}`;
+
+      const { error: uploadError } = await client.storage
+        .from("complaint-images")
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: file.type
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { error: insertError } = await client
+        .from("corruption_complaints")
+        .insert([{
+          complaint_date: date,
+          full_name: name,
+          phone: phone,
+          details: details,
+          image_path: path
+        }]);
+
+      if (insertError) {
+        // ถ้าบันทึกฐานข้อมูลไม่สำเร็จ ให้ลบไฟล์ที่เพิ่งอัปโหลดออก
+        await client.storage.from("complaint-images").remove([path]);
+        throw insertError;
+      }
+
+      form.reset();
+      document.getElementById("complaint_date").value =
+        new Date().toLocaleDateString("en-CA", {timeZone:"Asia/Bangkok"});
+      preview.style.display = "none";
+      modal.classList.add("show");
+    } catch (err) {
+      console.error(err);
+      showError("ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการตั้งค่า Supabase และลองใหม่อีกครั้ง");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "บันทึกข้อมูล";
+    }
+  });
+
+  document.getElementById("closeModal").addEventListener("click", () => {
+    modal.classList.remove("show");
+  });
+  modal.addEventListener("click", e => {
+    if (e.target === modal) modal.classList.remove("show");
+  });
+</script>
+</body>
+</html>
